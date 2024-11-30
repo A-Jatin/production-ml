@@ -1,4 +1,4 @@
-data
+resource
 __pycache__
 .pytest_cache
 synthetic_data.*

@@ -2,8 +2,7 @@ from pathlib import Path
 
 # Project paths
 ROOT_DIR = Path(__file__).parent.parent.parent
-DATA_DIR = ROOT_DIR / "data"
-MODELS_DIR = ROOT_DIR / "models"
+DATA_DIR = ROOT_DIR / "resources" / "data"
 
 # VGM settings
 N_COMPONENTS = 10
