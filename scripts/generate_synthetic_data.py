@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from src.data.loader import DataLoader
 from src.models.vgm import ScalableVGM
-from src.config.settings import DATA_DIR
+from src.core.settings import DATA_DIR
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import shutil
 from typing import List

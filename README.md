@@ -1,153 +1,106 @@
-# Scalable Synthetic Data Generation
+# Synthetic Data Generation Service
 
-## Overview
-This project implements a production-ready, scalable version of the Variational Gaussian Mixture (VGM) model for synthetic data generation, capable of handling 1B records. The implementation is based on the mode-specific normalization technique described in the CTGAN paper (NeurIPS 2019).
+A scalable service for generating synthetic data using Variational Gaussian Mixture (VGM) models. This project provides both a command-line interface and REST API for generating large-scale synthetic datasets while maintaining the statistical properties of the original data.
 
-## Project Structure
+## Features
 
-```
-synthetic_data/
-├── src/
-│   ├── models/
-│   │   ├── vgm.py # Core VGM implementation
-│   │   └── utils.py # Helper functions
-│   ├── data/
-│   │   ├── loader.py # Data loading and streaming
-│   │   └── preprocessor.py # Data preprocessing
-│   └── config/
-│       └── settings.py # Configuration parameters
-├── tests/
-│   ├── conftest.py # Test fixtures
-│   ├── test_vgm.py # VGM tests
-│   └── test_data.py # Data loader tests
-├── scripts/
-│   └── generate_synthetic_data.py # Main generation script
-├── setup.py # Package installation
-└── requirements.txt # Dependencies
-```
+- Scalable synthetic data generation using VGM models
+- Parallel processing for improved performance
+- REST API with FastAPI
+- Real-time progress monitoring via WebSocket
+- Memory-efficient data handling with chunked processing
+- Support for large-scale data generation (1B+ records)
 
-## Implementation Details
+## Installation
 
-### Scalability Solutions
-- **Chunked Processing**: Data is processed in configurable chunks to manage memory usage.
-- **Dask Integration**: Uses Dask for out-of-memory computations.
-- **Parallel Processing**: Leverages multiple cores for data generation.
-- **Streaming Output**: Results are written to disk incrementally.
-
-### Production-Ready Features
-- **Error Handling**: Comprehensive error handling and logging.
-- **Testing**: Full test suite with pytest.
-- **Type Hints**: Static type checking support.
-- **Configuration Management**: Centralized settings.
-- **Monitoring**: Performance and memory usage tracking.
-- **Documentation**: Detailed docstrings and comments.
-- **Modularity**: Clean separation of concerns.
-
-### Performance Optimizations
-- **Efficient Data Structures**: Numpy arrays for numerical computations.
-- **Vectorized Operations**: Minimized loops for better performance.
-- **Memory Management**: Controlled memory usage through streaming.
-- **Caching**: Strategic caching of frequently used computations.
-
-## Trade-offs and Decisions
-
-### Scalability vs. Accuracy
-- **Decision**: Use sampling for model fitting.
-- **Rationale**: Full dataset fitting would be computationally expensive.
-- **Impact**: Slight reduction in accuracy for massive performance gain.
-- **Mitigation**: Increased sample size for critical applications.
-
-### Speed vs. Memory
-- **Decision**: Chunk-based processing with configurable size.
-- **Rationale**: Balance between processing speed and memory usage.
-- **Impact**: Slightly slower than full in-memory processing.
-- **Mitigation**: Parallel processing of chunks.
-
-### Complexity vs. Maintainability
-- **Decision**: Modular design with clear interfaces.
-- **Rationale**: Easier maintenance and testing.
-- **Impact**: Small performance overhead from abstractions.
-- **Mitigation**: Strategic optimization of critical paths.
-
-## Performance Metrics
-
-- **Processing Time**: Generation of 1B records: ~8 minutes.
-- **Memory Usage**: < 4GB RAM.
-- **Disk Usage**: ~30GB for output.
-
-### Scalability
-- **Linear Scaling**: With number of records.
-- **Constant Memory Usage**: Regardless of input size.
-- **CPU Utilization**: ~80% across all cores.
-
-## Installation and Usage
-
-### Installation
+Clone the repository and install dependencies:
 ```bash
-# Clone the repository
-git clone [repository-url]
-cd synthetic_data
-
-# Install dependencies
-pip install -e .
+git clone <repository-url>
+cd production-ml
+pip install -r requirements.txt
 ```
 
-### Running Tests
-```bash
-# Run all tests
-pytest
+## Usage
 
-# Run specific test file
-pytest tests/test_vgm.py
+### Command Line Interface
 
-# Run with coverage
-pytest --cov=src tests/
-```
-
-### Generating Synthetic Data
+Generate synthetic data using the CLI:
 ```bash
 python scripts/generate_synthetic_data.py \
-    --input-file /path/to/input.csv \
-    --output-file /path/to/output.csv \
-    --target-size 1000000000
+--input-file Credit.csv \
+--output-file data/synthetic_output.csv \
+--target-size 1000000 \
+--sample-size 100000
 ```
 
-## Future Improvements
+### REST API
 
-1. **Distributed Processing**
-   - Implement distributed computing support.
-   - Add cloud storage integration.
+Start the API server:
+```bash
+python main.py
+```
 
-2. **Performance Optimization**
-   - GPU acceleration for model fitting.
-   - Optimized data structures for specific use cases.
+The API will be available at `http://localhost:8000`
 
-3. **Additional Features**
-   - Real-time monitoring dashboard.
-   - Automated parameter tuning.
-   - Quality metrics calculation.
+#### API Endpoints
 
-## Requirements
+- `POST /api/v1/synthetic-data/generate`: Start synthetic data generation
+Sample request body:
+```json
+{
+  "input_file": "Credit.csv",
+  "output_file": "synthetic_data.csv",
+  "temp_dir": "resource/data/output/temp",
+  "target_size": 1000000000,
+  "sample_size": 100000
+}
+```
+Results:
+```json
+{
+  "job_id": "42a44295-3170-45fd-9c6c-9f0d556c6574",
+  "status": "completed",
+  "output_file": "synthetic_data.csv",
+  "error_message": null,
+  "metrics": {
+    "processing_time_seconds": 378.56955194473267
+  }
+}
+```
+- `GET /api/v1/synthetic-data/status/{job_id}`: Check generation status
+- `GET /health`: Health check endpoint
 
-- Python 3.8+
-- Dependencies listed in requirements.txt
-- Minimum 8GB RAM
-- 50GB free disk space
+## Project Structure
+```
+├── src/
+│   ├── api/ # API routes and handlers
+│   ├── core/ # Core configuration and settings
+│   ├── data/ # Data loading and processing
+│   └── models/ # ML models including VGM
+├── tests/ # Test suite
+├── scripts/ # CLI tools
+└── main.py # API entry point
+```
 
-## Contributing
 
-1. Fork the repository.
-2. Create a feature branch.
-3. Commit changes.
-4. Push to the branch.
-5. Create a Pull Request.
+## Configuration
 
-## License
+Key settings can be configured in `src/core/settings.py`:
 
-MIT License - see LICENSE file for details.
+- `N_COMPONENTS`: Number of VGM components (default: 10)
+- `CHUNK_SIZE`: Processing chunk size (default: 100,000)
+- `N_JOBS`: Number of parallel jobs (-1 for all cores)
 
-## References
+## Testing
 
-1. CTGAN Paper: "Modeling Tabular Data using Conditional GAN" (NeurIPS 2019)
-2. Scikit-learn Documentation: BayesianGaussianMixture
-3. Dask Documentation: Parallel Computing
+Run the test suite:
+```bash
+pytest tests/
+```
+
+## Performance Considerations
+
+- Uses parallel processing for data generation
+- Implements memory-efficient chunked processing
+- Optimized file I/O with buffered operations
+- Supports distributed processing for large-scale generation

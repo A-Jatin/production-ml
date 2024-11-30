@@ -4,7 +4,7 @@ from typing import Tuple, List
 import logging
 from concurrent.futures import ProcessPoolExecutor
 import pandas as pd
-from ..config.settings import N_COMPONENTS, RANDOM_STATE, EPS, N_JOBS
+from ..core.settings import N_COMPONENTS, RANDOM_STATE, EPS, N_JOBS
 
 logger = logging.getLogger(__name__)
 

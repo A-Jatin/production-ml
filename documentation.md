@@ -2,9 +2,9 @@
 
 ## Table of Contents
 - [1. Problem Statement](#1-problem-statement)
-- [2. Current Implementation Analysis](#2-current-implementation-analysis)
-- [3. Proposed Implementation](#3-proposed-implementation)
-- [4. Implementation Plan](#4-implementation-plan)
+- [2. Implementation Overview](#2-implementation-overview)
+- [3. Key Components](#3-key-components)
+- [4. Optimizations](#4-optimizations)
 - [5. Success Metrics](#5-success-metrics)
 
 ## 1. Problem Statement
@@ -14,190 +14,76 @@ We need to implement a scalable, production-ready version of VGM (Variational Ga
 - Maintain correctness of the algorithm
 - Follow ML production best practices
 
-## 2. Current Implementation Analysis
+## 2. Implementation Overview
 
-### 2.1 Core Algorithm (from CTGAN paper)
-The current implementation uses mode-specific normalization where:
+The implementation consists of three main components:
+1. `ScalableVGM`: Core VGM implementation with batch processing capabilities
+2. `SyntheticDataService`: Service layer for generating synthetic data
+3. `DataLoader`: Efficient data loading and streaming component
+
+### 2.1 Core Algorithm
+The implementation uses mode-specific normalization where:
 1. A Bayesian Gaussian Mixture model fits the data distribution
-2. Each value is normalized based on its most likely mode using:
-   ```python
-   normalized_value = (x - μ_mode) / (4 * σ_mode)
-   ```
-3. The mode information is preserved using one-hot encoding
+2. Each value is normalized based on its most likely mode
+3. The mode information is preserved for inverse transformation
 
-### 2.2 Current Limitations
-1. **Memory Usage**: The implementation loads entire dataset into memory
-2. **Scalability Issues**: 
-   - Uses sklearn's BayesianGaussianMixture which isn't optimized for large datasets
-   - Stores full arrays in memory during transformation
-   - No batch processing capability
+## 3. Key Components
 
-3. **Production Readiness Gaps**:
-   - No error handling
-   - Missing logging
-   - No monitoring capabilities
-   - No model versioning
-   - No validation of input/output
-   - No performance metrics
-
-## 3. Proposed Implementation
-
-### 3.1 Architecture Overview
+### 3.1 ScalableVGM
 ```python
 class ScalableVGM:
-    """
-    Production-ready implementation of Variational Gaussian Mixture for large-scale data
-    Key Features:
-        - Batch processing
-        - Distributed computing support
-        - Memory-efficient operations
-        - Monitoring and logging
-        - Model versioning
-    """
-    def __init__(self,
-                 n_components=10,
-                 batch_size=100000,
-                 random_state=None):
-        self.n_components = n_components
-        self.batch_size = batch_size
-        self.random_state = random_state
-        self.model = None
-        self.version = "1.0.0"
+    def __init__(self, n_components: int = N_COMPONENTS, random_state: int = RANDOM_STATE):
+        self.bgm = BayesianGaussianMixture(
+            n_components=n_components,
+            weight_concentration_prior_type='dirichlet_process',
+            random_state=random_state
+        )
 ```
 
-### 3.2 Key Components
+Key features:
+- Efficient batch processing
+- Memory-optimized transformations
+- Comprehensive error handling and logging
 
-#### 3.2.1 Data Handling
+### 3.2 Data Loading
 ```python
-class DataHandler:
-    """Handles efficient data loading and batch processing"""
-    def __init__(self, file_path, batch_size):
-        self.file_path = file_path
-        self.batch_size = batch_size
-
-    def batch_iterator(self):
-        """Yields batches of data using memory-efficient reading"""
-        with pd.read_csv(self.file_path, chunksize=self.batch_size) as reader:
-            for chunk in reader:
-                yield chunk
+class DataLoader:
+    def __init__(self, chunk_size: int = 100_000):
+        self.chunk_size = chunk_size
+    
+    def load_csv(self, path: Union[str, Path], columns: list = None) -> dd.DataFrame:
+        """Load data using dask for out-of-memory processing"""
 ```
 
-#### 3.2.2 Model Management
+### 3.3 Synthetic Data Generation
 ```python
-class ModelManager:
-    """Handles model persistence and versioning"""
-    def save_model(self, model, path):
-        """Save model with metadata"""
-        metadata = {
-            'version': model.version,
-            'timestamp': datetime.now().isoformat(),
-            'parameters': model.get_params()
-        }
-        # Save implementation
-
-    def load_model(self, path):
-        """Load model with validation"""
-        # Load implementation
+class SyntheticDataService:
+    def generate_synthetic_data(self) -> float:
+        """Main method to generate synthetic data. Returns total execution time."""
 ```
 
-### 3.3 Scalability Features
+## 4. Optimizations
 
-1. **Batch Processing**:
-```python
-def fit_batch(self, batch):
-    """Process a single batch of data"""
-    # Update sufficient statistics
-    self._update_statistics(batch)
-    # Update model parameters
-    self._update_parameters()
-```
+### 4.1 Memory Optimizations
+- Chunk-based processing with configurable chunk sizes
+- Use of Dask for out-of-memory data processing
+- Efficient file I/O with large buffer sizes (64MB)
+- Batch processing of temporary files (5 files at a time)
+- Immediate cleanup of temporary files after processing
 
-2. **Distributed Computing**:
-```python
-def fit_distributed(self, data_iterator):
-    """Fit model using distributed computing"""
-    with parallel_backend('dask'):
-        # Parallel processing implementation
-        pass
-```
+### 4.2 Performance Optimizations
+- Parallel processing using ProcessPoolExecutor
+- Optimized file concatenation with binary I/O
+- Memory-efficient array operations using numpy
+- Streaming data processing with generators
 
-3. **Memory Optimization**:
-```python
-def transform_batch(self, batch):
-    """Memory-efficient transformation"""
-    # Use generators and numpy memory views
-    pass
-```
-
-### 3.4 Production Features
-
-1. **Logging**:
-```python
-def setup_logging(self):
-    """Configure logging with proper levels and handlers"""
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-```
-
-2. **Monitoring**:
-```python
-def monitor_performance(self):
-    """Track key metrics"""
-    metrics = {
-        'processing_time': self.processing_time,
-        'memory_usage': self.memory_usage,
-        'accuracy': self.accuracy
-    }
-    return metrics
-```
-
-3. **Validation**:
-```python
-def validate_input(self, data):
-    """Validate input data"""
-    assert isinstance(data, np.ndarray)
-    assert not np.isnan(data).any()
-    # Additional validation
-```
-
-## 4. Implementation Plan
-
-1. **Phase 1: Core Implementation**
-   - Implement batch processing
-   - Add basic error handling
-   - Set up logging
-
-2. **Phase 2: Scalability**
-   - Add distributed computing support
-   - Optimize memory usage
-   - Implement performance monitoring
-
-3. **Phase 3: Production Features**
-   - Add model versioning
-   - Implement validation
-   - Add metrics collection
-   - Set up monitoring
-
-4. **Phase 4: Testing and Validation**
-   - Unit tests
-   - Integration tests
-   - Performance tests
-   - Validation with 1B records
+### 4.3 Reliability Features
+- Comprehensive error handling and logging
+- Progress tracking during long operations
+- Automatic cleanup of temporary resources
+- Input validation and data integrity checks
 
 ## 5. Success Metrics
 
-1. **Performance**:
-   - Process 1B records in < 10 minutes
-   - Memory usage < 32GB
-   - CPU usage < 80%
-
-2. **Accuracy**:
-   - Inverse transform error < 1%
-   - Mode preservation accuracy > 95%
-
-3. **Reliability**:
-   - Error rate < 0.1%
-   - Zero memory leaks
-   - Graceful error handling
+### 5.1 Performance Targets
+- Process 1B records in < 10 minutes
