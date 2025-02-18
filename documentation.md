@@ -17,9 +17,7 @@ We need to implement a scalable, production-ready version of VGM (Variational Ga
 ## 2. Implementation Overview
 
 The implementation consists of three main components:
-1. `ScalableVGM`: Core VGM implementation with batch processing capabilities
-2. `SyntheticDataService`: Service layer for generating synthetic data
-3. `DataLoader`: Efficient data loading and streaming component
+TBD
 
 ### 2.1 Core Algorithm
 The implementation uses mode-specific normalization where:
