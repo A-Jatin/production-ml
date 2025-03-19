@@ -11,7 +11,7 @@ import gc
 import numpy as np
 import pandas as pd
 from src.data.loader import DataLoader
-from src.models.vgm import ScalableVGM
+from src.models.vgm import ParallelVGM
 from src.core.settings import DATA_DIR
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import shutil
@@ -173,7 +173,7 @@ def main():
         # Initialize components
         logger.info("Initializing data loader and VGM model...")
         loader = DataLoader()
-        vgm = ScalableVGM()
+        vgm = ParallelVGM()
         
         # Load and sample original data
         logger.info(f"Loading data from {args.input_file}")

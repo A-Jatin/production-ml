@@ -8,7 +8,7 @@ from ..core.settings import N_COMPONENTS, RANDOM_STATE, EPS, N_JOBS
 
 logger = logging.getLogger(__name__)
 
-class ScalableVGM:
+class ParallelVGM:
     """Scalable implementation of Variational Gaussian Mixture model"""
     
     def __init__(self, n_components: int = N_COMPONENTS, random_state: int = RANDOM_STATE):
@@ -23,7 +23,7 @@ class ScalableVGM:
         self.means = None
         self.stds = None
     
-    def fit(self, data: np.ndarray) -> 'ScalableVGM':
+    def fit(self, data: np.ndarray) -> 'ParallelVGM':
         """Fit the VGM model on input data"""
         try:
             # Reshape data if needed
