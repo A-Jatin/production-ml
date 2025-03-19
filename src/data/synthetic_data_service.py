@@ -9,7 +9,7 @@ from typing import List, Optional
 from dataclasses import dataclass
 
 from src.data.loader import DataLoader
-from src.models.vgm import ScalableVGM
+from src.models.vgm import ParallelVGM
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class SyntheticDataService:
     def __init__(self, config: SyntheticDataConfig):
         self.config = config
         self.loader = DataLoader()
-        self.vgm = ScalableVGM()
+        self.vgm = ParallelVGM()
         self.chunk_size = config.chunk_size or self.loader.chunk_size
         
     def generate_synthetic_data(self) -> float:
@@ -63,7 +63,7 @@ class SyntheticDataService:
         self.vgm.fit(sample_data)
 
     @staticmethod
-    def _generate_chunk(chunk_size: int, vgm: ScalableVGM) -> np.ndarray:
+    def _generate_chunk(chunk_size: int, vgm: ParallelVGM) -> np.ndarray:
         """Generate a single chunk of synthetic data"""
         synthetic_normalized = np.random.normal(size=(chunk_size, 1))
         mode_indicators = np.random.randint(0, len(vgm.means), size=chunk_size)
