@@ -42,7 +42,7 @@ async def generate_data_task(job_id: str, config: SyntheticDataConfig):
             "error_message": str(e)
         }
 
-@router.post("/generate", response_model=SyntheticDataResponse)
+@router.post("/generate_synthetic_data", response_model=SyntheticDataResponse)
 async def generate_synthetic_data(
     request: SyntheticDataRequest,
     background_tasks: BackgroundTasks
@@ -52,7 +52,7 @@ async def generate_synthetic_data(
     config = SyntheticDataConfig(
         input_file=Path(request.input_file),
         output_file=Path(request.output_file),
-        temp_dir=Path(request.temp_dir),
+        temp_dir=Path(request.temporary_directory),
         target_size=request.target_size,
         sample_size=request.sample_size
     )
