@@ -17,21 +17,21 @@ We need to implement a scalable, production-ready version of VGM (Variational Ga
 ## 2. Implementation Overview
 
 The implementation consists of three main components:
-1. `ScalableVGM`: Core VGM implementation with batch processing capabilities
+1. `ParallelVGM`: Core VGM implementation with batch processing capabilities
 2. `SyntheticDataService`: Service layer for generating synthetic data
 3. `DataLoader`: Efficient data loading and streaming component
 
 ### 2.1 Core Algorithm
 The implementation uses mode-specific normalization where:
 1. A Bayesian Gaussian Mixture model fits the data distribution
-2. Each value is normalized based on its most likely mode
-3. The mode information is preserved for inverse transformation
+2. Normalize each value based on its most likely mode
+3. The inverse transformation preserves the mode information
 
 ## 3. Key Components
 
-### 3.1 ScalableVGM
+### 3.1 ParallelVGM
 ```python
-class ScalableVGM:
+class ParallelVGM:
     def __init__(self, n_components: int = N_COMPONENTS, random_state: int = RANDOM_STATE):
         self.bgm = BayesianGaussianMixture(
             n_components=n_components,
@@ -44,6 +44,8 @@ Key features:
 - Efficient batch processing
 - Memory-optimized transformations
 - Comprehensive error handling and logging
+
+**Note:** The renaming from `ScalableVGM` to `ParallelVGM` emphasizes the class's capabilities in parallel processing. This change is part of a refactor focused on code clarity, with no changes in the underlying functionality.
 
 ### 3.2 Data Loading
 ```python
@@ -87,3 +89,8 @@ class SyntheticDataService:
 
 ### 5.1 Performance Targets
 - Process 1B records in < 10 minutes
+
+## Changelog
+
+### Recent Changes
+- **Refactor:** The class `ScalableVGM` is now called `ParallelVGM` to better reflect its capabilities in parallel processing. This change is a refactor for code clarity, with no expected changes in functionality.
