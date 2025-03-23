@@ -40,7 +40,7 @@ Start the API server:
 python main.py
 ```
 
-The API will be available at `http://localhost:8000`
+The API is available at `http://localhost:8000`
 
 #### API Endpoints
 
@@ -76,16 +76,15 @@ Results:
 │   ├── api/ # API routes and handlers
 │   ├── core/ # Core configuration and settings
 │   ├── data/ # Data loading and processing
-│   └── models/ # ML models including VGM
+│   └── models/ # ML models including ParallelVGM
 ├── tests/ # Test suite
 ├── scripts/ # CLI tools
 └── main.py # API entry point
 ```
 
-
 ## Configuration
 
-Key settings can be configured in `src/core/settings.py`:
+Key settings can be configured in `src/core/settings.py`.
 
 - `N_COMPONENTS`: Number of VGM components (default: 10)
 - `CHUNK_SIZE`: Processing chunk size (default: 100,000)
@@ -104,3 +103,7 @@ pytest tests/
 - Implements memory-efficient chunked processing
 - Optimized file I/O with buffered operations
 - Supports distributed processing for large-scale generation
+
+### Note on Refactoring
+
+The class previously known as `ScalableVGM` now appears as `ParallelVGM` to emphasize its parallel processing capabilities. All code examples and references reflect this change.
